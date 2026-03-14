@@ -1,35 +1,49 @@
 package com.example.workoutlogger.ux.screen
 
-
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.room.Room
 import com.example.workoutlogger.data.Exercise
+import com.example.workoutlogger.data.WorkoutDatabase
 import com.example.workoutlogger.ux.component.ExerciseItem
+import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun WorkoutScreen() {
 
+    val context = LocalContext.current
+
+    val db = remember {
+        Room.databaseBuilder(
+            context,
+            WorkoutDatabase::class.java,
+            "workout_database"
+        ).build()
+    }
+
+    val dao = db.exerciseDao()
+
     val exercises = remember { mutableStateListOf<Exercise>() }
+
+    LaunchedEffect(Unit) {
+
+        val savedExercises = dao.getAllExercises()
+
+        exercises.clear()
+        exercises.addAll(savedExercises)
+
+    }
 
     val totalExercises = exercises.size
     val totalSets = exercises.sumOf { it.sets }
@@ -38,19 +52,20 @@ fun WorkoutScreen() {
     var showBottomSheet by remember { mutableStateOf(false) }
     var editingExercise by remember { mutableStateOf<Exercise?>(null) }
 
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
     Scaffold(
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+
         floatingActionButton = {
             FloatingActionButton(
-                onClick = {
-                    showBottomSheet = true
-                }
+                onClick = { showBottomSheet = true }
             ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "Add Exercise"
-                )
+                Icon(Icons.Default.Add, contentDescription = "Add Exercise")
             }
         }
+
     ) { padding ->
 
         Column(
@@ -73,26 +88,84 @@ fun WorkoutScreen() {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            LazyColumn(
-                modifier = Modifier.weight(1f)
-            ) {
+            /* ---------- EMPTY STATE  ---------- */
 
-                items(exercises) { exercise ->
+            if (exercises.isEmpty()) {
 
-                    ExerciseItem(
-                        exercise = exercise,
-                        onDelete = { exercises.remove(exercise) },
-                        onEdit = {
-                            editingExercise = exercise
-                            showBottomSheet = true
-                        }
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+
+                    Text(
+                        text = "💪 No exercises yet",
+                        style = MaterialTheme.typography.titleMedium
                     )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        text = "Tap the + button to add your first workout",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+
+            } else {
+
+                LazyColumn(
+                    modifier = Modifier.weight(1f)
+                ) {
+
+                    items(exercises) { exercise ->
+
+                        ExerciseItem(
+                            exercise = exercise,
+                            modifier = Modifier.animateItemPlacement(),
+
+                            onDelete = {
+
+                                exercises.remove(exercise)
+
+                                scope.launch {
+
+                                    dao.deleteExercise(exercise)
+
+                                    val result = snackbarHostState.showSnackbar(
+                                        message = "Exercise Deleted",
+                                        actionLabel = "Undo",
+                                        duration = SnackbarDuration.Short
+                                    )
+
+                                    if (result == SnackbarResult.ActionPerformed) {
+
+                                        dao.insertExercise(exercise)
+                                        exercises.add(exercise)
+
+                                    }
+
+                                }
+
+                            },
+
+                            onEdit = {
+                                editingExercise = exercise
+                                showBottomSheet = true
+                            }
+
+                        )
+
+                    }
 
                 }
 
             }
 
         }
+
+        /* ---------- BOTTOM SHEET ---------- */
 
         if (showBottomSheet) {
 
@@ -107,23 +180,31 @@ fun WorkoutScreen() {
 
                 onSave = { updatedExercise ->
 
-                    if (editingExercise != null) {
+                    scope.launch {
 
-                        val index = exercises.indexOf(editingExercise)
+                        if (updatedExercise.id != 0) {
 
-                        if (index != -1) {
-                            exercises[index] = updatedExercise
+
+                            dao.updateExercise(updatedExercise)
+
+                            val index = exercises.indexOfFirst { it.id == updatedExercise.id }
+
+                            if (index != -1) {
+                                exercises[index] = updatedExercise
+                            }
+
+                        } else {
+
+
+                            val newId = dao.insertExercise(updatedExercise)
+
+                            exercises.add(updatedExercise.copy(id = newId.toInt()))
+
                         }
-
-                    } else {
-
-                        exercises.add(updatedExercise)
 
                     }
 
                     showBottomSheet = false
-                    editingExercise = null
-
                 }
 
             )

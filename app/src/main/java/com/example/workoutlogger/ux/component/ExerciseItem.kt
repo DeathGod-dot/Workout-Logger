@@ -25,34 +25,48 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.workoutlogger.data.Exercise
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ExerciseItem(exercise: Exercise, onDelete : ()  -> Unit, onEdit : () -> Unit) {
+fun ExerciseItem(
+    exercise: Exercise,
+    onDelete: () -> Unit,
+    onEdit: () -> Unit,
+    modifier: Modifier = Modifier
+) {
 
 
     var showDialog by remember { mutableStateOf(false) }
 
-    Card( modifier = Modifier
-        .fillMaxWidth()
-        .padding(vertical = 6.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 6.dp, horizontal = 16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
 
         Row(
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
                 .padding(16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
 
-        ) {
-            Text(text = exercise.name ,
-                style = MaterialTheme.typography.titleMedium)
+            ) {
+            Text(
+                text = exercise.name,
+                modifier = Modifier.weight(1f),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                style = MaterialTheme.typography.titleMedium
+            )
 
-            Row (
+            Row(
                 verticalAlignment = Alignment.CenterVertically
-            ){
+            ) {
                 Text(
                     text = "${exercise.weight} kg • ${exercise.sets} sets x ${exercise.reps} reps",
                     style = MaterialTheme.typography.bodyMedium,

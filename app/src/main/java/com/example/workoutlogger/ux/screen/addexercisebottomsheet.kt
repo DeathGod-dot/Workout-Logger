@@ -19,10 +19,7 @@ fun AddExerciseBottomSheet(
 
         AddExerciseForm(
             exercise = exercise,
-            onSave = { exercise ->
-                onSave(exercise)
-                onDismiss()
-            }
+            onSave = onSave
         )
 
     }
