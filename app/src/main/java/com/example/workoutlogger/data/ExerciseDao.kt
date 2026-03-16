@@ -5,6 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ExerciseDao {
@@ -20,5 +21,5 @@ interface ExerciseDao {
     suspend fun updateExercise(exercise: Exercise)
 
     @Query(" SELECT * FROM exercises")
-    suspend fun getAllExercises(): List<Exercise>
+    fun getAllExercises(): Flow<List<Exercise>>
 }

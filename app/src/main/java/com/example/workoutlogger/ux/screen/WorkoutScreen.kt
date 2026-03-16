@@ -16,6 +16,7 @@ import androidx.room.Room
 import com.example.workoutlogger.data.Exercise
 import com.example.workoutlogger.data.WorkoutDatabase
 import com.example.workoutlogger.ux.component.ExerciseItem
+import com.example.workoutlogger.viewmodel.WorkoutViewModel
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -33,16 +34,12 @@ fun WorkoutScreen() {
     }
 
     val dao = db.exerciseDao()
-
-    val exercises = remember { mutableStateListOf<Exercise>() }
+    val viewModel = remember { WorkoutViewModel(dao) }
+    val exercises by viewModel.exercises.collectAsState(initial = emptyList())
 
     LaunchedEffect(Unit) {
 
         val savedExercises = dao.getAllExercises()
-
-        exercises.clear()
-        exercises.addAll(savedExercises)
-
     }
 
     val totalExercises = exercises.size
@@ -126,30 +123,20 @@ fun WorkoutScreen() {
                             modifier = Modifier.animateItemPlacement(),
 
                             onDelete = {
-
-                                exercises.remove(exercise)
-
                                 scope.launch {
-
-                                    dao.deleteExercise(exercise)
+                                    viewModel.deleteExercise(exercise)
 
                                     val result = snackbarHostState.showSnackbar(
                                         message = "Exercise Deleted",
                                         actionLabel = "Undo",
                                         duration = SnackbarDuration.Short
                                     )
-
                                     if (result == SnackbarResult.ActionPerformed) {
-
-                                        dao.insertExercise(exercise)
-                                        exercises.add(exercise)
-
+                                        viewModel.addExercise(exercise)
                                     }
-
                                 }
 
                             },
-
                             onEdit = {
                                 editingExercise = exercise
                                 showBottomSheet = true
@@ -160,7 +147,6 @@ fun WorkoutScreen() {
                     }
 
                 }
-
             }
 
         }
@@ -185,32 +171,20 @@ fun WorkoutScreen() {
                         if (updatedExercise.id != 0) {
 
 
-                            dao.updateExercise(updatedExercise)
+                            viewModel.updateExercise(updatedExercise)
 
                             val index = exercises.indexOfFirst { it.id == updatedExercise.id }
 
                             if (index != -1) {
-                                exercises[index] = updatedExercise
                             }
 
                         } else {
-
-
                             val newId = dao.insertExercise(updatedExercise)
-
-                            exercises.add(updatedExercise.copy(id = newId.toInt()))
-
                         }
-
                     }
-
                     showBottomSheet = false
                 }
-
             )
-
         }
-
     }
-
 }
