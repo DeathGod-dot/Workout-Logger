@@ -6,6 +6,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.ShowChart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -19,9 +22,65 @@ import com.example.workoutlogger.ux.component.ExerciseItem
 import com.example.workoutlogger.viewmodel.WorkoutViewModel
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalFoundationApi::class)
+/* -------------------- MAIN SCREEN (Navigation) -------------------- */
+
 @Composable
 fun WorkoutScreen() {
+
+    var selectedScreen by remember { mutableStateOf<Screen>(Screen.Workout) }
+
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    Scaffold(
+
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+
+        bottomBar = {
+            NavigationBar {
+
+                NavigationBarItem(
+                    selected = selectedScreen == Screen.Workout,
+                    onClick = { selectedScreen = Screen.Workout },
+                    icon = { Icon(Icons.Default.Home, contentDescription = "Workout") },
+                    label = { Text("Workout") }
+                )
+
+                NavigationBarItem(
+                    selected = selectedScreen == Screen.Progress,
+                    onClick = { selectedScreen = Screen.Progress },
+                    icon = { Icon(Icons.Default.ShowChart, contentDescription = "Progress") },
+                    label = { Text("Progress") }
+                )
+
+                NavigationBarItem(
+                    selected = selectedScreen == Screen.Settings,
+                    onClick = { selectedScreen = Screen.Settings },
+                    icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
+                    label = { Text("Settings") }
+                )
+            }
+        }
+    ) { padding ->
+
+        Box(
+            modifier = Modifier
+                .padding(padding)
+                .fillMaxSize()
+        ) {
+            when (selectedScreen) {
+                Screen.Workout -> WorkoutContent(snackbarHostState)
+                Screen.Progress -> ProgressScreen()
+                Screen.Settings -> SettingsScreen()
+            }
+        }
+    }
+}
+
+/* -------------------- WORKOUT CONTENT -------------------- */
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun WorkoutContent(snackbarHostState: SnackbarHostState) {
 
     val context = LocalContext.current
 
@@ -30,17 +89,14 @@ fun WorkoutScreen() {
             context,
             WorkoutDatabase::class.java,
             "workout_database"
-        ).build()
+        )
+            .fallbackToDestructiveMigration()
+            .build()
     }
 
     val dao = db.exerciseDao()
     val viewModel = remember { WorkoutViewModel(dao) }
     val exercises by viewModel.exercises.collectAsState(initial = emptyList())
-
-    LaunchedEffect(Unit) {
-
-        val savedExercises = dao.getAllExercises()
-    }
 
     val totalExercises = exercises.size
     val totalSets = exercises.sumOf { it.sets }
@@ -49,26 +105,12 @@ fun WorkoutScreen() {
     var showBottomSheet by remember { mutableStateOf(false) }
     var editingExercise by remember { mutableStateOf<Exercise?>(null) }
 
-    val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
-    Scaffold(
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = { showBottomSheet = true }
-            ) {
-                Icon(Icons.Default.Add, contentDescription = "Add Exercise")
-            }
-        }
-
-    ) { padding ->
+    Box(modifier = Modifier.fillMaxSize()) {
 
         Column(
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize()
+            modifier = Modifier.fillMaxSize()
         ) {
 
             Text(
@@ -84,8 +126,6 @@ fun WorkoutScreen() {
             )
 
             Spacer(modifier = Modifier.height(16.dp))
-
-            /* ---------- EMPTY STATE  ---------- */
 
             if (exercises.isEmpty()) {
 
@@ -131,60 +171,61 @@ fun WorkoutScreen() {
                                         actionLabel = "Undo",
                                         duration = SnackbarDuration.Short
                                     )
+
                                     if (result == SnackbarResult.ActionPerformed) {
                                         viewModel.addExercise(exercise)
                                     }
                                 }
-
                             },
+
                             onEdit = {
                                 editingExercise = exercise
                                 showBottomSheet = true
                             }
-
                         )
-
                     }
-
                 }
             }
-
         }
 
-        /* ---------- BOTTOM SHEET ---------- */
+        /* -------- Floating Button -------- */
 
-        if (showBottomSheet) {
+        FloatingActionButton(
+            onClick = { showBottomSheet = true },
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp)
+        ) {
+            Icon(Icons.Default.Add, contentDescription = "Add Exercise")
+        }
+    }
 
-            AddExerciseBottomSheet(
+    /* -------- Bottom Sheet -------- */
 
-                exercise = editingExercise,
+    if (showBottomSheet) {
 
-                onDismiss = {
-                    showBottomSheet = false
-                    editingExercise = null
-                },
+        AddExerciseBottomSheet(
+            exercise = editingExercise,
 
-                onSave = { updatedExercise ->
+            onDismiss = {
+                showBottomSheet = false
+                editingExercise = null
+            },
 
-                    scope.launch {
+            onSave = { updatedExercise ->
 
-                        if (updatedExercise.id != 0) {
+                scope.launch {
 
-
-                            viewModel.updateExercise(updatedExercise)
-
-                            val index = exercises.indexOfFirst { it.id == updatedExercise.id }
-
-                            if (index != -1) {
-                            }
-
-                        } else {
-                            val newId = dao.insertExercise(updatedExercise)
-                        }
+                    if (updatedExercise.id != 0) {
+                        viewModel.updateExercise(updatedExercise)
+                    } else {
+                        viewModel.addExercise(updatedExercise)
                     }
-                    showBottomSheet = false
                 }
-            )
-        }
+
+                showBottomSheet = false
+                editingExercise = null
+            }
+        )
     }
 }

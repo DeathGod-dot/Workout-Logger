@@ -87,7 +87,8 @@ fun AddExerciseForm(
                         name = name,
                         sets = sets.toIntOrNull() ?: 0,
                         reps = reps.toIntOrNull() ?: 0,
-                        weight = weight.toIntOrNull() ?: 0
+                        weight = weight.toIntOrNull() ?: 0,
+                        date = System.currentTimeMillis()
                     )
 
                     onSave(newExercise)
