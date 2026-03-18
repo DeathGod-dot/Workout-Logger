@@ -25,7 +25,8 @@ fun ProgressScreen(
 
     var selectedExercise by remember {
         mutableStateOf(
-            exerciseNames.firstOrNull() ?: "")
+            exerciseNames.firstOrNull() ?: ""
+        )
     }
 
     LaunchedEffect(exerciseNames) {

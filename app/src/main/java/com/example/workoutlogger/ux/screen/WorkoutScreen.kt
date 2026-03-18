@@ -29,9 +29,9 @@ fun WorkoutScreen() {
 
     var selectedScreen by remember { mutableStateOf<Screen>(Screen.Workout) }
 
-    val snackbarHostState = remember { SnackbarHostState() }
-
     val context = LocalContext.current
+
+    /* -------- DATABASE -------- */
 
     val db = remember {
         Room.databaseBuilder(
@@ -44,7 +44,12 @@ fun WorkoutScreen() {
     }
 
     val dao = db.exerciseDao()
+
+    /* -------- SHARED VIEWMODEL -------- */
+
     val viewModel = remember { WorkoutViewModel(dao) }
+
+    val snackbarHostState = remember { SnackbarHostState() }
 
     Scaffold(
 
@@ -56,25 +61,26 @@ fun WorkoutScreen() {
                 NavigationBarItem(
                     selected = selectedScreen == Screen.Workout,
                     onClick = { selectedScreen = Screen.Workout },
-                    icon = { Icon(Icons.Default.Home, contentDescription = "Workout") },
+                    icon = { Icon(Icons.Default.Home, null) },
                     label = { Text("Workout") }
                 )
 
                 NavigationBarItem(
                     selected = selectedScreen == Screen.Progress,
                     onClick = { selectedScreen = Screen.Progress },
-                    icon = { Icon(Icons.Default.ShowChart, contentDescription = "Progress") },
+                    icon = { Icon(Icons.Default.ShowChart, null) },
                     label = { Text("Progress") }
                 )
 
                 NavigationBarItem(
                     selected = selectedScreen == Screen.Settings,
                     onClick = { selectedScreen = Screen.Settings },
-                    icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
+                    icon = { Icon(Icons.Default.Settings, null) },
                     label = { Text("Settings") }
                 )
             }
         }
+
     ) { padding ->
 
         Box(
@@ -82,35 +88,29 @@ fun WorkoutScreen() {
                 .padding(padding)
                 .fillMaxSize()
         ) {
+
             when (selectedScreen) {
-                Screen.Workout -> WorkoutContent(viewModel,snackbarHostState)
-                Screen.Progress -> ProgressScreen(viewModel )
+
+                Screen.Workout -> WorkoutContent(
+                    viewModel = viewModel,
+                    snackbarHostState = snackbarHostState
+                )
+
+                Screen.Progress -> ProgressScreen(viewModel)
+
                 Screen.Settings -> SettingsScreen()
             }
         }
     }
 }
-
 /* -------------------- WORKOUT CONTENT -------------------- */
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun WorkoutContent( viewModel: WorkoutViewModel,snackbarHostState: SnackbarHostState) {
+fun WorkoutContent(
+        viewModel: WorkoutViewModel,
+        snackbarHostState: SnackbarHostState) {
 
-    val context = LocalContext.current
-
-    val db = remember {
-        Room.databaseBuilder(
-            context,
-            WorkoutDatabase::class.java,
-            "workout_database"
-        )
-            .fallbackToDestructiveMigration()
-            .build()
-    }
-
-    val dao = db.exerciseDao()
-    val viewModel = remember { WorkoutViewModel(dao) }
     val exercises by viewModel.exercises.collectAsState(initial = emptyList())
 
     val totalExercises = exercises.size
