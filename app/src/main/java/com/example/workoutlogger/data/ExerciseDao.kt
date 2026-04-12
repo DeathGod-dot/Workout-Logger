@@ -22,4 +22,10 @@ interface ExerciseDao {
 
     @Query(" SELECT * FROM exercises")
     fun getAllExercises(): Flow<List<Exercise>>
+
+    @Query("SELECT * FROM exercises")
+    suspend fun getAllExercisesList(): List<Exercise>
+
+    @Query("DELETE FROM exercises")
+    suspend fun clearAllExercises()
 }
