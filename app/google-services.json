@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "931022406565",
+    "project_id": "workout-logger-60861",
+    "storage_bucket": "workout-logger-60861.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:931022406565:android:2bb8421733f380d0d3de4c",
+        "android_client_info": {
+          "package_name": "com.example.workoutlogger"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "931022406565-rjffpd1i31aqkvj7uqg03i0dmkc2l44u.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.workoutlogger",
+            "certificate_hash": "0564f40aef0f1204ddbeda57d601be0d42ada48a"
+          }
+        },
+        {
+          "client_id": "931022406565-7pt5nmds0sa6e9d7tuq5sgto3pit4g8h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBTlsJjQuDvP9iF27ITk4Am9Ml45VLWp_8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "931022406565-7pt5nmds0sa6e9d7tuq5sgto3pit4g8h.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
