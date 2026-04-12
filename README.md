@@ -1,46 +1,95 @@
-# 🏋️ WorkoutLogger
+# 🏋️ Workout Logger - Premium Fitness Tracker
 
-WorkoutLogger is a simple and efficient Android application designed to help you track your fitness progress. Built with modern Android development practices, it provides a clean interface to log your exercises and view your workout performance at a glance.
+[![Android](https://img.shields.io/badge/Platform-Android-green.svg)](https://developer.android.com/)
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.0-purple.svg)](https://kotlinlang.org/)
+[![Compose](https://img.shields.io/badge/Jetpack-Compose-blue.svg)](https://developer.android.com/jetpack/compose)
+[![Firebase](https://img.shields.io/badge/Firebase-Auth%20%26%20Firestore-orange.svg)](https://firebase.google.com/)
 
-## ✨ Features
+A high-fidelity, professional-grade Android workout tracker designed for serious lifters. **Workout Logger** combines a premium dark aesthetic with powerful data-driven features to help you crush your fitness goals.
 
-- **Exercise Tracking**: Easily log your exercises including name, sets, reps, and weight.
-- **Workout Summary**: Real-time calculation of total exercises, total sets, and total volume (kg).
-- **Manage Exercises**: Edit or remove exercises as needed during your workout.
-- **Modern UI**: Clean and intuitive interface built with Jetpack Compose and Material 3.
-- **Efficient Input**: Convenient bottom sheet form for adding and updating exercises.
+---
+
+## ✨ Key Features
+
+### 👤 **Premium Identity**
+*   **Google Sign-In**: Secure and seamless authentication.
+*   **Customizable Profile**: Personalized display names and permanent profile picture storage.
+*   **Real-time Stats**: Track your total workouts, lifetime volume, and PR count at a glance.
+
+### 📈 **Advanced Analytics**
+*   **Progress Graphs**: Beautiful, interactive line charts (powered by Vico) tracking your Max Weight and Volume over time.
+*   **Smart PR Detection**: Automated trophies and notifications when you hit new Personal Records.
+*   **Estimated 1RM**: Real-time 1-Rep Max calculations using professional formulas.
+
+### ⚡ **Engagement & Consistency**
+*   **Functional Streaks**: An automated system that tracks and celebrates your daily consistency.
+*   **Energetic Reminders**: Daily, precisely scheduled workout alerts with randomized motivational messages.
+*   **Integrated Rest Timer**: A themed modal timer that triggers automatically after logging sets.
+
+### ☁️ **Cloud Infrastructure**
+*   **Firestore Backup**: Sync your entire local database to the cloud with one tap.
+*   **One-Click Restore**: Seamlessly download your data to a new device.
+*   **Data Integrity**: Full support for decimal weight values (e.g., 1.5kg) and instant unit conversion (KG ↔ LBS).
+
+---
+
+## 🎨 Design System
+
+The app follows a **Deep Dark Premium** aesthetic:
+- **Background**: `#0D1526` (Deep Navy)
+- **Surfaces**: `#1E2A4A` (Card Slate)
+- **Primary Accent**: `#3B82F6` (Electric Blue)
+- **Achievements**: `#F59E0B` (Gold)
+- **Success**: `#10B981` (Vibrant Green)
+
+---
 
 ## 🚀 Tech Stack
 
-- **Language**: [Kotlin](https://kotlinlang.org/)
-- **UI Framework**: [Jetpack Compose](https://developer.android.com/jetpack/compose)
-- **Design System**: [Material 3](https://m3.material.io/)
-- **Architecture**: Clean architecture with state management using Compose `remember` and `mutableStateListOf`.
+*   **UI**: Jetpack Compose (100% Declarative)
+*   **Database**: Room (Local Persistence)
+*   **Backend**: Firebase Auth & Firestore (Cloud Storage)
+*   **Image Loading**: Coil
+*   **Charts**: Vico Charts
+*   **Storage**: DataStore (Persistent Settings)
+*   **Architecture**: MVVM (Model-View-ViewModel)
 
-## 📸 Screenshots
+---
 
-| Workout Overview | Add Exercise |
-| :---: | :---: |
-| ![Workout Screen](https://via.placeholder.com/300x600?text=Workout+Screen) | ![Add Exercise](https://via.placeholder.com/300x600?text=Add+Exercise) |
+## 🛠️ Setup Instructions
 
-## 🛠️ Getting Started
+### 1. Prerequisites
+*   Android Studio Ladybug or newer.
+*   A Firebase Project.
 
-1.  **Clone the repository:**
-    ```bash
-    git clone https://github.com/yourusername/WorkoutLogger.git
-    ```
-2.  **Open in Android Studio:**
-    Import the project and wait for Gradle sync to complete.
-3.  **Run the app:**
-    Select an emulator or physical device and click the **Run** button.
+### 2. Firebase Configuration
+1.  Add your Android app to Firebase using package name `com.example.workoutlogger`.
+2.  Run `./gradlew signingReport` to get your SHA-1 key and add it to Firebase.
+3.  Download `google-services.json` and place it in the `app/` directory.
+4.  Enable **Google Sign-In** and **Firestore** in the Firebase Console.
+5.  Update the **Web Client ID** in `GoogleAuthUiClient.kt`.
 
-## 🏗️ Project Structure
+### 3. Build & Run
+```bash
+git clone https://github.com/DeathGod-dot/Workout-Logger.git
+cd Workout-Logger
+./gradlew assembleDebug
+```
 
-- `data/`: Contains the `Exercise` data class.
-- `ux/screen/`: Includes the main `WorkoutScreen`, `AddExerciseForm`, and `WorkoutStatsCard`.
-- `ux/component/`: Reusable UI components like `ExerciseItem`.
-- `ui/theme/`: App styling and theme definitions.
+---
 
-## 📄 License
+## 📸 Preview
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+| Home Dashboard | Progress Insights | Settings & Profile |
+| :---: | :---: | :---: |
+| 🏋️‍♂️ | 📈 | ⚙️ |
+| *(Add your screenshots here)* | *(Add your screenshots here)* | *(Add your screenshots here)* |
+
+---
+
+## 🤝 Support & Contribution
+
+Enjoying the app? Leave a ⭐ on the repository!  
+Found a bug? Use the **Report a Bug** feature directly in the app settings to reach out.
+
+**Developed with ❤️ by [Shubham](https://github.com/DeathGod-dot)**
