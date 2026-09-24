@@ -121,9 +121,9 @@ fun AddExerciseForm(
                         val weightFloat = weight.toFloatOrNull()
 
                         if (setsInt != null && repsInt != null && weightFloat != null &&
-                            setsInt > 0 && repsInt > 0 && weightFloat > 0f) {
+                            setsInt > 0 && repsInt > 0 && weightFloat >= 0f) {
 
-                            val savedWeight = if (weightUnit == "lbs") (weightFloat * 0.453592f) else weightFloat
+                            val savedWeight = if (weightUnit == "lbs") (weightFloat * 0.45359237f) else weightFloat
 
                             val newExercise = Exercise(
                                 id = exercise?.id ?: 0,
@@ -131,7 +131,7 @@ fun AddExerciseForm(
                                 sets = setsInt,
                                 reps = repsInt,
                                 weight = savedWeight,
-                                date = System.currentTimeMillis()
+                                date = exercise?.date ?: System.currentTimeMillis()
                             )
 
                             onSave(newExercise)
@@ -143,7 +143,7 @@ fun AddExerciseForm(
                     enabled = name.isNotBlank() &&
                             (sets.toIntOrNull() ?: 0) > 0 &&
                             (reps.toIntOrNull() ?: 0) > 0 &&
-                            (weight.toFloatOrNull() ?: 0f) > 0f
+                            (weight.toFloatOrNull() ?: -1f) >= 0f
                 ) {
                     Text("Save", fontWeight = FontWeight.ExtraBold)
                 }

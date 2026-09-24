@@ -1,95 +1,181 @@
-# 🏋️ Workout Logger - Premium Fitness Tracker
+# 🏋️ Workout Logger
 
-[![Android](https://img.shields.io/badge/Platform-Android-green.svg)](https://developer.android.com/)
-[![Kotlin](https://img.shields.io/badge/Kotlin-2.0-purple.svg)](https://kotlinlang.org/)
-[![Compose](https://img.shields.io/badge/Jetpack-Compose-blue.svg)](https://developer.android.com/jetpack/compose)
-[![Firebase](https://img.shields.io/badge/Firebase-Auth%20%26%20Firestore-orange.svg)](https://firebase.google.com/)
-
-A high-fidelity, professional-grade Android workout tracker designed for serious lifters. **Workout Logger** combines a premium dark aesthetic with powerful data-driven features to help you crush your fitness goals.
+A modern, data-driven Android application for tracking workouts, monitoring progress, and maintaining consistency. Built with a clean architecture and a focus on performance, usability, and scalability.
 
 ---
 
-## ✨ Key Features
+## 📌 Overview
 
-### 👤 **Premium Identity**
-*   **Google Sign-In**: Secure and seamless authentication.
-*   **Customizable Profile**: Personalized display names and permanent profile picture storage.
-*   **Real-time Stats**: Track your total workouts, lifetime volume, and PR count at a glance.
-
-### 📈 **Advanced Analytics**
-*   **Progress Graphs**: Beautiful, interactive line charts (powered by Vico) tracking your Max Weight and Volume over time.
-*   **Smart PR Detection**: Automated trophies and notifications when you hit new Personal Records.
-*   **Estimated 1RM**: Real-time 1-Rep Max calculations using professional formulas.
-
-### ⚡ **Engagement & Consistency**
-*   **Functional Streaks**: An automated system that tracks and celebrates your daily consistency.
-*   **Energetic Reminders**: Daily, precisely scheduled workout alerts with randomized motivational messages.
-*   **Integrated Rest Timer**: A themed modal timer that triggers automatically after logging sets.
-
-### ☁️ **Cloud Infrastructure**
-*   **Firestore Backup**: Sync your entire local database to the cloud with one tap.
-*   **One-Click Restore**: Seamlessly download your data to a new device.
-*   **Data Integrity**: Full support for decimal weight values (e.g., 1.5kg) and instant unit conversion (KG ↔ LBS).
+**Workout Logger** is designed to help users efficiently log workouts, analyze performance trends, and stay consistent with their fitness goals. The application combines a minimal, dark-themed UI with powerful tracking and analytics features.
 
 ---
 
-## 🎨 Design System
+## ✨ Features
 
-The app follows a **Deep Dark Premium** aesthetic:
-- **Background**: `#0D1526` (Deep Navy)
-- **Surfaces**: `#1E2A4A` (Card Slate)
-- **Primary Accent**: `#3B82F6` (Electric Blue)
-- **Achievements**: `#F59E0B` (Gold)
-- **Success**: `#10B981` (Vibrant Green)
+### 🔐 Authentication & User Profile
+
+* Secure authentication via Google Sign-In
+* Customizable user profile (display name & profile image)
+* Persistent user data with cloud synchronization
+
+### 📊 Workout Tracking & Analytics
+
+* Log workouts with detailed set and weight tracking
+* Automatic Personal Record (PR) detection
+* Real-time statistics (total workouts, volume, PRs)
+* Estimated One-Rep Max (1RM) calculations
+
+### 📈 Progress Visualization
+
+* Interactive charts for:
+
+    * Maximum weight progression
+    * Training volume over time
+* Built using Vico charting library
+
+### ⏱️ Consistency & Engagement
+
+* Daily workout streak tracking
+* Built-in rest timer between sets
+* Scheduled reminders with motivational prompts
+
+### ☁️ Data Management
+
+* Local storage using Room database
+* Cloud backup and restore via Firebase Firestore
+* Seamless multi-device data synchronization
 
 ---
 
-## 🚀 Tech Stack
+## 🎨 UI & Design
 
-*   **UI**: Jetpack Compose (100% Declarative)
-*   **Database**: Room (Local Persistence)
-*   **Backend**: Firebase Auth & Firestore (Cloud Storage)
-*   **Image Loading**: Coil
-*   **Charts**: Vico Charts
-*   **Storage**: DataStore (Persistent Settings)
-*   **Architecture**: MVVM (Model-View-ViewModel)
+The application follows a **dark, minimal design system** focused on readability and usability:
+
+| Element        | Color Code |
+| -------------- | ---------- |
+| Background     | `#0D1526`  |
+| Surface        | `#1E2A4A`  |
+| Primary Accent | `#3B82F6`  |
+| Success        | `#10B981`  |
+| Highlight      | `#F59E0B`  |
 
 ---
 
-## 🛠️ Setup Instructions
+## 🏗️ Architecture
 
-### 1. Prerequisites
-*   Android Studio Ladybug or newer.
-*   A Firebase Project.
+The project follows **MVVM (Model-View-ViewModel)** architecture for clear separation of concerns and scalability.
 
-### 2. Firebase Configuration
-1.  Add your Android app to Firebase using package name `com.example.workoutlogger`.
-2.  Run `./gradlew signingReport` to get your SHA-1 key and add it to Firebase.
-3.  Download `google-services.json` and place it in the `app/` directory.
-4.  Enable **Google Sign-In** and **Firestore** in the Firebase Console.
-5.  Update the **Web Client ID** in `GoogleAuthUiClient.kt`.
+**Key principles:**
 
-### 3. Build & Run
+* Unidirectional data flow
+* State-driven UI with Jetpack Compose
+* Repository pattern for data handling
+
+---
+
+## 🧰 Tech Stack
+
+| Layer        | Technology                |
+| ------------ | ------------------------- |
+| Language     | Kotlin                    |
+| UI           | Jetpack Compose           |
+| Architecture | MVVM                      |
+| Local DB     | Room                      |
+| Cloud        | Firebase Auth & Firestore |
+| Charts       | Vico                      |
+| Image Loader | Coil                      |
+| Preferences  | DataStore                 |
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+* Android Studio (latest stable version recommended)
+* Firebase project
+
+### Installation
+
 ```bash
 git clone https://github.com/DeathGod-dot/Workout-Logger.git
 cd Workout-Logger
+```
+
+### Firebase Setup
+
+1. Create a Firebase project
+2. Add an Android app with package name:
+
+   ```
+   com.example.workoutlogger
+   ```
+3. Generate SHA-1:
+
+   ```bash
+   ./gradlew signingReport
+   ```
+4. Add SHA-1 to Firebase
+5. Download `google-services.json` and place it in:
+
+   ```
+   app/google-services.json
+   ```
+6. Enable:
+
+    * Google Sign-In
+    * Firestore Database
+7. Update Web Client ID in:
+
+   ```
+   GoogleAuthUiClient.kt
+   ```
+
+### Build
+
+```bash
 ./gradlew assembleDebug
 ```
 
 ---
 
-## 📸 Preview
+## 📷 Screenshots
 
-| Home Dashboard | Progress Insights | Settings & Profile |
-| :---: | :---: | :---: |
-| 🏋️‍♂️ | 📈 | ⚙️ |
-| *(Add your screenshots here)* | *(Add your screenshots here)* | *(Add your screenshots here)* |
+| Dashboard          | Progress           | Profile            |
+| ------------------ | ------------------ | ------------------ |
+| *(Add screenshot)* | *(Add screenshot)* | *(Add screenshot)* |
 
 ---
 
-## 🤝 Support & Contribution
+## 🤝 Contributing
 
-Enjoying the app? Leave a ⭐ on the repository!  
-Found a bug? Use the **Report a Bug** feature directly in the app settings to reach out.
+Contributions are welcome. If you'd like to improve the project:
 
-**Developed with ❤️ by [Shubham](https://github.com/DeathGod-dot)**
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Open a pull request
+
+---
+
+## 🐛 Reporting Issues
+
+If you encounter any issues:
+
+* Open a GitHub issue
+* Or use the in-app reporting feature
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License. *(Add LICENSE file if not present)*
+
+---
+
+## 👨‍💻 Author
+
+**Shubham**
+GitHub: [https://github.com/DeathGod-dot](https://github.com/DeathGod-dot)
+
+---

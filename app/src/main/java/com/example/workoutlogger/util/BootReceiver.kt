@@ -12,15 +12,20 @@ import kotlinx.coroutines.launch
 class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action == Intent.ACTION_BOOT_COMPLETED) {
+            val pendingResult = goAsync()
             val settingsManager = SettingsManager(context)
             val notificationHelper = NotificationHelper(context)
-            
+
             CoroutineScope(Dispatchers.IO).launch {
-                val enabled = settingsManager.notificationsEnabledFlow.first()
-                val time = settingsManager.reminderTimeFlow.first()
-                
-                if (enabled) {
-                    notificationHelper.scheduleWorkoutReminder(time)
+                try {
+                    val enabled = settingsManager.notificationsEnabledFlow.first()
+                    val time = settingsManager.reminderTimeFlow.first()
+
+                    if (enabled) {
+                        notificationHelper.scheduleWorkoutReminder(time)
+                    }
+                } finally {
+                    pendingResult.finish()
                 }
             }
         }

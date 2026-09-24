@@ -12,6 +12,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
@@ -124,8 +127,13 @@ class MainActivity : ComponentActivity() {
                     }
                 )
 
-                LaunchedEffect(key1 = state.isSignInSuccessful) {
+                var signedInUser by remember {
+                    mutableStateOf(googleAuthUiClient.getSignedInUser())
+                }
+
+                LaunchedEffect(state.isSignInSuccessful) {
                     if(state.isSignInSuccessful) {
+                        signedInUser = googleAuthUiClient.getSignedInUser()
                         Toast.makeText(
                             applicationContext,
                             "Sign in successful",
@@ -137,13 +145,13 @@ class MainActivity : ComponentActivity() {
                 Surface(
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    val signedInUser = googleAuthUiClient.getSignedInUser()
-                    if(signedInUser != null || state.isSignInSuccessful) {
+                    if(signedInUser != null) {
                         WorkoutScreen(
                             userData = signedInUser,
                             onSignOut = {
                                 lifecycleScope.launch {
                                     googleAuthUiClient.signOut()
+                                    signedInUser = null
                                     viewModel.resetState()
                                     Toast.makeText(
                                         applicationContext,

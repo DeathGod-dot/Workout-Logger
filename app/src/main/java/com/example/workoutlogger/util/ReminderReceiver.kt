@@ -19,43 +19,47 @@ import kotlinx.coroutines.launch
 class ReminderReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         Log.d("ReminderReceiver", "Alarm triggered! Attempting to send notification...")
-        
+        val pendingResult = goAsync()
         val settingsManager = SettingsManager(context)
         val notificationHelper = NotificationHelper(context)
 
         CoroutineScope(Dispatchers.IO).launch {
-            val enabled = settingsManager.notificationsEnabledFlow.first()
-            val time = settingsManager.reminderTimeFlow.first()
+            try {
+                val enabled = settingsManager.notificationsEnabledFlow.first()
+                val time = settingsManager.reminderTimeFlow.first()
 
-            if (enabled) {
-                // Energetic Messages
-                val messages = listOf(
-                    "No Excuses! 🚀" to "Success starts outside your comfort zone. Let's go!",
-                    "Beast Mode: ON 🦍" to "The only bad workout is the one that didn't happen.",
-                    "The Gym is Calling... 📞" to "You're only one workout away from a good mood!",
-                    "Iron Awaits! ⚔️" to "Discipline > Motivation. See you at the gym!",
-                    "Time to Level Up! 🆙" to "Don't let your dreams be dreams. Lift that weight!",
-                    "Chase the Pump! 💪" to "Yesterday you said tomorrow. Today is the day!"
-                )
-                val (title, content) = messages.random()
+                if (enabled) {
+                    // Energetic Messages
+                    val messages = listOf(
+                        "No Excuses! 🚀" to "Success starts outside your comfort zone. Let's go!",
+                        "Beast Mode: ON 🦍" to "The only bad workout is the one that didn't happen.",
+                        "The Gym is Calling... 📞" to "You're only one workout away from a good mood!",
+                        "Iron Awaits! ⚔️" to "Discipline > Motivation. See you at the gym!",
+                        "Time to Level Up! 🆙" to "Don't let your dreams be dreams. Lift that weight!",
+                        "Chase the Pump! 💪" to "Yesterday you said tomorrow. Today is the day!"
+                    )
+                    val (title, content) = messages.random()
 
-                // Send the notification
-                if (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
-                    Log.d("ReminderReceiver", "Permission granted. Sending notification.")
-                    val builder = NotificationCompat.Builder(context, "workout_reminders")
-                        .setSmallIcon(android.R.drawable.ic_dialog_info)
-                        .setContentTitle(title)
-                        .setContentText(content)
-                        .setPriority(NotificationCompat.PRIORITY_HIGH)
-                        .setAutoCancel(true)
+                    // Send the notification
+                    if (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+                        Log.d("ReminderReceiver", "Permission granted. Sending notification.")
+                        val builder = NotificationCompat.Builder(context, "workout_reminders")
+                            .setSmallIcon(android.R.drawable.ic_dialog_info)
+                            .setContentTitle(title)
+                            .setContentText(content)
+                            .setPriority(NotificationCompat.PRIORITY_HIGH)
+                            .setAutoCancel(true)
 
-                    with(NotificationManagerCompat.from(context)) {
-                        notify(1001, builder.build())
+                        with(NotificationManagerCompat.from(context)) {
+                            notify(1001, builder.build())
+                        }
                     }
-                }
 
-                // Reschedule the next alarm for tomorrow
-                notificationHelper.scheduleWorkoutReminder(time)
+                    // Reschedule the next alarm for tomorrow
+                    notificationHelper.scheduleWorkoutReminder(time)
+                }
+            } finally {
+                pendingResult.finish()
             }
         }
     }

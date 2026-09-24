@@ -15,19 +15,20 @@ class FirestoreManager(
         
         return try {
             val exercises = dao.getAllExercisesList()
-            val batch = firestore.batch()
-            
             val userExercisesRef = firestore.collection("users")
                 .document(user.uid)
                 .collection("exercises")
 
-            // For a simple backup, we overwrite existing entries or update them
-            exercises.forEach { exercise ->
-                val docRef = userExercisesRef.document(exercise.id.toString())
-                batch.set(docRef, exercise)
+            // Firestore enforces max 500 writes per batch
+            exercises.chunked(500).forEach { chunk ->
+                val batch = firestore.batch()
+                chunk.forEach { exercise ->
+                    val docRef = userExercisesRef.document(exercise.id.toString())
+                    batch.set(docRef, exercise)
+                }
+                batch.commit().await()
             }
 
-            batch.commit().await()
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)

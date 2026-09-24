@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -253,7 +254,7 @@ fun ProgressScreen(
             // 5. CHART SECTION
             item {
                 if (filteredData.isNotEmpty()) {
-                    ChartCard(filteredData, selectedMetric)
+                    ChartCard(filteredData, selectedMetric, weightUnit)
                 } else {
                     Box(
                         modifier = Modifier
@@ -355,10 +356,11 @@ fun ProgressScreen(
                 }
             }
             item {
-                MomentumCard()
+                MomentumCard(filteredData)
             }
             item {
-                MilestoneCard()
+                val maxWeight = filteredData.maxOfOrNull { it.weight } ?: 0f
+                MilestoneCard(maxWeight, weightUnit)
             }
         }
     }
@@ -412,7 +414,7 @@ fun RangeChip(label: String, isSelected: Boolean, modifier: Modifier, onClick: (
 }
 
 @Composable
-fun ChartCard(data: List<WorkoutSession>, metric: String) {
+fun ChartCard(data: List<WorkoutSession>, metric: String, weightUnit: String) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(14.dp),
@@ -434,7 +436,8 @@ fun ChartCard(data: List<WorkoutSession>, metric: String) {
                 }
             } else {
                 val chartData = data.mapIndexed { index, session ->
-                    val value = if (metric == "Max Weight") session.weight else session.volume.toFloat()
+                    val volume = if (weightUnit == "lbs") session.volume * 2.20462f else session.volume.toFloat()
+                    val value = if (metric == "Max Weight") session.weight else volume
                     FloatEntry(index.toFloat(), value)
                 }
                 val entryModel = entryModelOf(chartData)
@@ -460,7 +463,11 @@ fun ChartCard(data: List<WorkoutSession>, metric: String) {
                         valueFormatter = object : AxisValueFormatter<AxisPosition.Horizontal.Bottom> {
                             override fun formatValue(value: Float, chartValues: ChartValues): CharSequence {
                                 val index = value.toInt()
-                                return if (index >= 0 && index < data.size) data[index].date else ""
+                                return if (value >= 0f && kotlin.math.abs(value - index) < 0.01f && index >= 0 && index < data.size) {
+                                    data[index].date
+                                } else {
+                                    ""
+                                }
                             }
                         },
                         label = MaterialTheme.typography.labelSmall.copy(color = TextMuted).toAxisLabelComponent(),
@@ -531,7 +538,25 @@ fun InsightMiniCard(label: String, value: String, delta: String, isPositive: Boo
 }
 
 @Composable
-fun MomentumCard() {
+fun MomentumCard(data: List<WorkoutSession>) {
+    val lastSessions = data.takeLast(4)
+    var prCount = 0
+    var runningMax = 0f
+    data.forEach { session ->
+        if (session.weight > runningMax) {
+            runningMax = session.weight
+            if (session in lastSessions) {
+                prCount++
+            }
+        }
+    }
+
+    val subtitle = when {
+        data.size < 2 -> "Log more workouts to track your growth streak."
+        prCount > 0 -> "You've hit a PR in $prCount of your last ${lastSessions.size} sessions."
+        else -> "Keep consistent to break your next personal record!"
+    }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(14.dp),
@@ -546,18 +571,28 @@ fun MomentumCard() {
             Spacer(modifier = Modifier.width(16.dp))
             Column {
                 Text("On a growth streak!", color = AccentGreen, fontWeight = FontWeight.Bold)
-                Text("You've hit a PR in 3 of your last 4 sessions.", color = TextMuted, fontSize = 12.sp)
+                Text(subtitle, color = TextMuted, fontSize = 12.sp)
             }
         }
     }
 }
 
 @Composable
-fun MilestoneCard() {
-    var progress by remember { mutableFloatStateOf(0f) }
+fun MilestoneCard(maxWeight: Float, weightUnit: String) {
+    val step = if (weightUnit == "lbs") 25f else 10f
+    val nextMilestone = if (maxWeight <= 0f) step else {
+        val rounded = (kotlin.math.ceil(maxWeight / step) * step).toFloat()
+        if (rounded <= maxWeight) rounded + step else rounded
+    }
+    val prevMilestone = (nextMilestone - step).coerceAtLeast(0f)
+    val progress = if (nextMilestone > prevMilestone) {
+        ((maxWeight - prevMilestone) / (nextMilestone - prevMilestone)).coerceIn(0f, 1f)
+    } else 0f
+    val diff = (nextMilestone - maxWeight).coerceAtLeast(0f)
     val animatedProgress by animateFloatAsState(targetValue = progress, label = "progress")
-    
-    LaunchedEffect(Unit) { progress = 0.875f }
+
+    val diffText = if (diff % 1.0f == 0f) diff.toInt().toString() else String.format(Locale.getDefault(), "%.1f", diff)
+    val milestoneText = if (nextMilestone % 1.0f == 0f) nextMilestone.toInt().toString() else String.format(Locale.getDefault(), "%.1f", nextMilestone)
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -572,10 +607,10 @@ fun MilestoneCard() {
                     Spacer(modifier = Modifier.width(8.dp))
                     Text("Next Milestone", color = AccentPurple, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                 }
-                Text("87%", color = AccentPurple, fontWeight = FontWeight.ExtraBold, fontSize = 14.sp)
+                Text("${(progress * 100).toInt()}%", color = AccentPurple, fontWeight = FontWeight.ExtraBold, fontSize = 14.sp)
             }
             Spacer(modifier = Modifier.height(8.dp))
-            Text("12.5 kg to reach 100 kg", color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+            Text("$diffText $weightUnit to reach $milestoneText $weightUnit", color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
             Spacer(modifier = Modifier.height(12.dp))
             LinearProgressIndicator(
                 progress = { animatedProgress },
@@ -589,8 +624,6 @@ fun MilestoneCard() {
         }
     }
 }
-
-private fun Color.toArgb() = (this.value shr 32).toInt()
 
 @Composable
 private fun androidx.compose.ui.text.TextStyle.toAxisLabelComponent() =

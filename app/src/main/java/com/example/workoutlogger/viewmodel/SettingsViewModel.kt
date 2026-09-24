@@ -107,25 +107,38 @@ class SettingsViewModel(
             val streak = settingsManager.currentStreakFlow.first()
             val now = System.currentTimeMillis()
 
-            val lastCal = java.util.Calendar.getInstance().apply { timeInMillis = lastWorkoutDate }
-            val nowCal = java.util.Calendar.getInstance().apply { timeInMillis = now }
-
-            // Check if it's the same day
-            val isSameDay = lastCal.get(java.util.Calendar.YEAR) == nowCal.get(java.util.Calendar.YEAR) &&
-                           lastCal.get(java.util.Calendar.DAY_OF_YEAR) == nowCal.get(java.util.Calendar.DAY_OF_YEAR)
-
-            if (isSameDay && streak > 0) return@launch // Already logged today
-
-            // Check if it's the next day
-            lastCal.add(java.util.Calendar.DAY_OF_YEAR, 1)
-            val isNextDay = lastCal.get(java.util.Calendar.YEAR) == nowCal.get(java.util.Calendar.YEAR) &&
-                            lastCal.get(java.util.Calendar.DAY_OF_YEAR) == nowCal.get(java.util.Calendar.DAY_OF_YEAR)
-
-            if (isNextDay || streak == 0 || lastWorkoutDate == 0L) {
-                settingsManager.updateStreak(streak + 1, now)
-            } else {
-                // More than 1 day missed
+            if (lastWorkoutDate == 0L || streak == 0) {
                 settingsManager.updateStreak(1, now)
+                return@launch
+            }
+
+            val lastCal = java.util.Calendar.getInstance().apply {
+                timeInMillis = lastWorkoutDate
+                set(java.util.Calendar.HOUR_OF_DAY, 0)
+                set(java.util.Calendar.MINUTE, 0)
+                set(java.util.Calendar.SECOND, 0)
+                set(java.util.Calendar.MILLISECOND, 0)
+            }
+            val nowCal = java.util.Calendar.getInstance().apply {
+                timeInMillis = now
+                set(java.util.Calendar.HOUR_OF_DAY, 0)
+                set(java.util.Calendar.MINUTE, 0)
+                set(java.util.Calendar.SECOND, 0)
+                set(java.util.Calendar.MILLISECOND, 0)
+            }
+
+            val diffDays = ((nowCal.timeInMillis - lastCal.timeInMillis) / (1000L * 60 * 60 * 24)).toInt()
+
+            when {
+                diffDays == 0 -> {
+                    settingsManager.updateStreak(streak, now)
+                }
+                diffDays == 1 -> {
+                    settingsManager.updateStreak(streak + 1, now)
+                }
+                else -> {
+                    settingsManager.updateStreak(1, now)
+                }
             }
         }
     }
@@ -135,18 +148,23 @@ class SettingsViewModel(
             val lastWorkoutDate = settingsManager.lastWorkoutDateFlow.first()
             if (lastWorkoutDate == 0L) return@launch
 
-            val lastCal = java.util.Calendar.getInstance().apply { timeInMillis = lastWorkoutDate }
-            val nowCal = java.util.Calendar.getInstance()
+            val lastCal = java.util.Calendar.getInstance().apply {
+                timeInMillis = lastWorkoutDate
+                set(java.util.Calendar.HOUR_OF_DAY, 0)
+                set(java.util.Calendar.MINUTE, 0)
+                set(java.util.Calendar.SECOND, 0)
+                set(java.util.Calendar.MILLISECOND, 0)
+            }
+            val nowCal = java.util.Calendar.getInstance().apply {
+                set(java.util.Calendar.HOUR_OF_DAY, 0)
+                set(java.util.Calendar.MINUTE, 0)
+                set(java.util.Calendar.SECOND, 0)
+                set(java.util.Calendar.MILLISECOND, 0)
+            }
 
-            // Reset if more than 1 day has passed
-            lastCal.add(java.util.Calendar.DAY_OF_YEAR, 1)
-            if (nowCal.after(lastCal)) {
-                // If it's NOT the next day (meaning it's even later)
-                val isNextDay = lastCal.get(java.util.Calendar.YEAR) == nowCal.get(java.util.Calendar.YEAR) &&
-                                lastCal.get(java.util.Calendar.DAY_OF_YEAR) == nowCal.get(java.util.Calendar.DAY_OF_YEAR)
-                if (!isNextDay) {
-                    settingsManager.updateStreak(0, lastWorkoutDate) // Keep date but reset count
-                }
+            val diffDays = ((nowCal.timeInMillis - lastCal.timeInMillis) / (1000L * 60 * 60 * 24)).toInt()
+            if (diffDays > 1) {
+                settingsManager.updateStreak(0, lastWorkoutDate)
             }
         }
     }

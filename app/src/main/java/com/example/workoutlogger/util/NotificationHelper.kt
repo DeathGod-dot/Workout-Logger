@@ -66,7 +66,8 @@ class NotificationHelper(private val context: Context) {
 
             try {
                 with(NotificationManagerCompat.from(context)) {
-                    notify(System.currentTimeMillis().toInt(), builder.build())
+                    val notificationId = (System.currentTimeMillis() % 100000).toInt()
+                    notify(notificationId, builder.build())
                 }
             } catch (e: SecurityException) {
                 Log.e("NotificationHelper", "Permission denied despite check", e)
@@ -89,16 +90,40 @@ class NotificationHelper(private val context: Context) {
             set(Calendar.HOUR_OF_DAY, minutesFromStartOfDay / 60)
             set(Calendar.MINUTE, minutesFromStartOfDay % 60)
             set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
             if (before(Calendar.getInstance())) {
                 add(Calendar.DAY_OF_YEAR, 1)
             }
         }
 
-        alarmManager.setExactAndAllowWhileIdle(
-            AlarmManager.RTC_WAKEUP,
-            calendar.timeInMillis,
-            pendingIntent
-        )
+        val canScheduleExact = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            alarmManager.canScheduleExactAlarms()
+        } else {
+            true
+        }
+
+        try {
+            if (canScheduleExact) {
+                alarmManager.setExactAndAllowWhileIdle(
+                    AlarmManager.RTC_WAKEUP,
+                    calendar.timeInMillis,
+                    pendingIntent
+                )
+            } else {
+                alarmManager.setAndAllowWhileIdle(
+                    AlarmManager.RTC_WAKEUP,
+                    calendar.timeInMillis,
+                    pendingIntent
+                )
+            }
+        } catch (e: SecurityException) {
+            Log.e("NotificationHelper", "Exact alarm denied, fallback to non-exact", e)
+            alarmManager.setAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                calendar.timeInMillis,
+                pendingIntent
+            )
+        }
     }
 
     fun cancelWorkoutReminder() {

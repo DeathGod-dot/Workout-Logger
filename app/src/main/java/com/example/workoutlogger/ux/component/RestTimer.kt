@@ -76,7 +76,7 @@ fun RestTimer(
                     trackColor = PrimaryPurple.copy(alpha = 0.1f)
                 )
                 Text(
-                    text = String.format("%02d:%02d", timeLeft / 60, timeLeft % 60),
+                    text = String.format(java.util.Locale.getDefault(), "%02d:%02d", timeLeft / 60, timeLeft % 60),
                     fontSize = 28.sp,
                     fontWeight = FontWeight.ExtraBold,
                     color = Color.White

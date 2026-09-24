@@ -39,10 +39,11 @@ class GoogleAuthUiClient(
     }
 
     suspend fun signInWithIntent(intent: Intent): SignInResult {
-        val credential = onTapClient.getSignInCredentialFromIntent(intent)
-        val googleIdToken = credential.googleIdToken
-        val googleIdCredential = GoogleAuthProvider.getCredential(googleIdToken, null)
         return try {
+            val credential = onTapClient.getSignInCredentialFromIntent(intent)
+            val googleIdToken = credential.googleIdToken
+                ?: return SignInResult(data = null, errorMessage = "No Google ID Token found")
+            val googleIdCredential = GoogleAuthProvider.getCredential(googleIdToken, null)
             val user = auth.signInWithCredential(googleIdCredential).await().user
             SignInResult(
                 data = user?.run {
@@ -81,12 +82,13 @@ class GoogleAuthUiClient(
     }
 
     private fun buildSignInRequest(): BeginSignInRequest {
+        val serverClientId = context.getString(com.example.workoutlogger.R.string.default_web_client_id)
         return BeginSignInRequest.builder()
             .setGoogleIdTokenRequestOptions(
                 BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
                     .setSupported(true)
                     .setFilterByAuthorizedAccounts(false)
-                    .setServerClientId("931022406565-7pt5nmds0sa6e9d7tuq5sgto3pit4g8h.apps.googleusercontent.com")
+                    .setServerClientId(serverClientId)
                     .build()
             )
             .setAutoSelectEnabled(true)
